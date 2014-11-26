@@ -19,9 +19,13 @@ RUN curl -s http://nginx.org/download/nginx-1.6.2.tar.gz | tar -xz -C /tmp \
 RUN apt-get -y install python-pip \
     && pip install pystache
 	
+RUN apt-get -y install apache2-utils
+
 # nginx configuration
 ADD nginx/nginx.conf /usr/local/nginx/conf/nginx.conf
-ADD nginx/nginx.default /usr/local/nginx/conf/sites-enabled/default.template
+ADD nginx/docker-registry.htpasswd /usr/local/nginx/conf/docker-registry.htpasswd
+ADD nginx/docker-registry.conf /usr/local/nginx/conf/docker-registry.conf
+ADD nginx/nginx.default /usr/local/nginx/conf/sites-enabled/default
 ADD start.sh /start.sh
 
 EXPOSE 80

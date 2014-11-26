@@ -1,65 +1,27 @@
 server {
-  listen 80;
-  server_name _;
-
-  client_max_body_size 0;                  # disable any limits to avoid HTTP 413 for large image uploads
-  chunked_transfer_encoding on;            # required to avoid HTTP 411: see Issue #1486 (https://github.com/dotcloud/docker/issues/1486)
-  proxy_set_header Host      $http_host;   # required for docker client's sake
-  proxy_set_header X-Real-IP $remote_addr; # pass on real client's IP
-
-  root  /usr/local/nginx/html;
-  index  index.html index.htm;
-
-  location / {
-	if ($request_method = PUT ) {
-       return 405;
-	}
-    proxy_pass {{backend}};
-  }
-  
-  location /v1/_ping {
-    auth_basic off;
-    proxy_pass {{backend}};
-  }
-  location /_ping {
-    auth_basic off;
-    proxy_pass {{backend}};
-  }
-}
-
-server {
   listen 5000;
   server_name _;
 
   client_max_body_size 0;                  # disable any limits to avoid HTTP 413 for large image uploads
   chunked_transfer_encoding on;            # required to avoid HTTP 411: see Issue #1486 (https://github.com/dotcloud/docker/issues/1486)
-  proxy_set_header Host      $http_host;   # required for docker client's sake
-  proxy_set_header X-Real-IP $remote_addr; # pass on real client's IP
 
   root  /usr/local/nginx/html;
   index  index.html index.htm;
 
-  location = /auth {
-    proxy_pass {{auth_backend}};
-    proxy_pass_request_body off;
-    proxy_set_header Content-Length "";
-    proxy_set_header X-Original-URI $request_uri;
-    proxy_set_header X-Docker-Token "";
-  }
-  
   location / {
-    proxy_pass {{backend}};
-    auth_request /auth;
-    proxy_next_upstream error timeout invalid_header http_500 http_502 http_503 http_504;
-    proxy_buffering off;	
+    auth_basic            "Restricted";
+    auth_basic_user_file  docker-registry.htpasswd;
+    include               docker-registry.conf;
   }
-  
+
   location /v1/_ping {
     auth_basic off;
-    proxy_pass {{backend}};
+    include               docker-registry.conf;
   }
+
   location /_ping {
     auth_basic off;
-    proxy_pass {{backend}};
+    include               docker-registry.conf;
   }
+
 }

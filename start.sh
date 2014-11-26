@@ -2,6 +2,6 @@
 
 NGINX=/usr/local/nginx
 
-pystache "`cat ${NGINX}/conf/sites-enabled/default.template`" "{\"auth_backend\":\"${AUTH_BACKEND}\", \"backend\":\"${BACKEND}\"}" > ${NGINX}/conf/sites-enabled/default
+# pystache "`cat ${NGINX}/conf/docker-registry.conf.template`" "{\"backend\":\"${BACKEND}\"}" > ${NGINX}/conf/docker-registry.conf
 
 ${NGINX}/sbin/nginx
