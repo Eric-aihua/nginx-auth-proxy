@@ -49,3 +49,25 @@ Pushing repository localhost:1000/hello-world (1 tags)
 511136ea3c5a: Pushing
 2014/11/26 08:05:51 HTTP code 401, Docker will not send auth headers over HTTP.
 ```
+
+Now we play with https+basic auth
+
+```
+docker build -t larrycai/nginx-auth-proxy .
+docker rm -f registry nginx
+docker run -d --name registry -p 5000:5000 registry
+docker run -d --hostname dokk.co --name nginx --link registry:registry -p 443:443 larrycai/nginx-auth-proxy
+
+# self service key
+openssl genrsa -des3 -out server.key 2048
+openssl req -new -key server.key -out server.csr # choose dokk.co for domain name
+cp server.key server.key.org
+openssl rsa -in server.key.org -out server.key
+openssl x509 -req -days 365 -in server.csr -signkey server.key -out server.crt
+
+# verify
+# open browser to access 192.168.59.103
+sudo vi /etc/hosts  # append dokk.co in 127.0.0.1
+curl -i -k https://larrycai:passwd@dokk.co
+docker login -u larrycai -p passwd -e "test@gmail.com" dokk.co
+
